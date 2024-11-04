@@ -51,11 +51,13 @@
 
 	let id = '';
 	let name = '';
+	let permission_scopes = '';
 
 	let info = {
 		id: '',
 		base_model_id: null,
 		name: '',
+		permission_scopes: [],
 		meta: {
 			profile_image_url: '/static/favicon.png',
 			description: '',
@@ -83,6 +85,8 @@
 		info.id = id;
 		info.name = name;
 		info.meta.capabilities = capabilities;
+		// @ts-ignore
+		info.permission_scopes = permission_scopes.split(' ');
 
 		if (knowledge.length > 0) {
 			info.meta.knowledge = knowledge;
@@ -143,6 +147,7 @@
 			if (model) {
 				id = model.id;
 				name = model.name;
+				permission_scopes = model.permission_scopes.join(' ');
 
 				info = {
 					...info,
@@ -632,6 +637,21 @@
 						}}
 					/>
 				</div>
+			</div>
+
+			<div class="mt-2">
+				<div class=" text-m font-semibold mb-2">Permission scopes</div>
+				<input
+					class="px-3 py-1.5 text-sm w-full bg-transparent border dark:border-gray-600 outline-none rounded-lg"
+					placeholder="Add Permission scopes (separated by spaces)"
+					bind:value={permission_scopes}
+					on:change={() => {
+						if (permission_scopes.length === 0) {
+							permission_scopes = 'default';
+						}
+					}}
+					required
+				/>
 			</div>
 
 			<div class="my-2 text-gray-300 dark:text-gray-700">

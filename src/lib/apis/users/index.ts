@@ -334,3 +334,20 @@ export const updateUserById = async (token: string, userId: string, user: UserUp
 
 	return res;
 };
+
+export const updateUserPermissionScopes = async (token: string, id: string, scopes: string[]) => {
+
+	const res = await fetch(`${WEBUI_API_BASE_URL}/users/update/permissionscopes`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${token}`
+		},
+		body: JSON.stringify({
+			id: id,
+			permission_scopes: scopes
+		})
+	})
+
+	return res
+};

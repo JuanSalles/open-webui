@@ -10,7 +10,12 @@
 
 	import { toast } from 'svelte-sonner';
 
-	import { updateUserRole, getUsers, deleteUserById } from '$lib/apis/users';
+	import {
+		updateUserRole,
+		getUsers,
+		deleteUserById,
+		updateUserPermissionScopes
+	} from '$lib/apis/users';
 
 	import EditUserModal from '$lib/components/admin/EditUserModal.svelte';
 	import Pagination from '$lib/components/common/Pagination.svelte';
@@ -24,6 +29,7 @@
 	import ChevronUp from '$lib/components/icons/ChevronUp.svelte';
 	import ChevronDown from '$lib/components/icons/ChevronDown.svelte';
 	import About from '$lib/components/chat/Settings/About.svelte';
+	import { writable } from 'svelte/store';
 
 	const i18n = getContext('i18n');
 
@@ -41,6 +47,9 @@
 
 	let showUserChatsModal = false;
 	let showEditUserModal = false;
+
+	let newScopes = '';
+	const editing = writable(null);
 
 	const updateRoleHandler = async (id, role) => {
 		const res = await updateUserRole(localStorage.token, id, role).catch((error) => {
@@ -71,6 +80,32 @@
 		});
 		if (res) {
 			users = await getUsers(localStorage.token);
+		}
+	};
+
+	const handleInputChange = (e) => {
+		newScopes = e.target.value;
+	};
+	const handleConfirmScopes = (id) => {
+		updateScopesHandler(id, newScopes.split(' '));
+	};
+
+	const handleCancelEditing = async (id) => {
+		users = await getUsers(localStorage.token);
+		editing.set(null);
+		newScopes = '';
+	};
+
+	const updateScopesHandler = async (id, scopes) => {
+		const res = await updateUserPermissionScopes(localStorage.token, id, scopes).catch((error) => {
+			toast.error(error);
+			return null;
+		});
+
+		if (res) {
+			users = await getUsers(localStorage.token);
+			editing.set(null);
+			newScopes = '';
 		}
 	};
 
@@ -339,6 +374,8 @@
 						</div>
 					</th>
 
+					<th scope="col" class="px-3 py-2 select-none"> Permission Scopes </th>
+
 					<th scope="col" class="px-3 py-2 text-right" />
 				</tr>
 			</thead>
@@ -390,6 +427,27 @@
 						</td>
 
 						<td class=" px-3 py-1"> {user.oauth_sub ?? ''} </td>
+
+						<td
+							class="px-3 py-1 editable scopes-form"
+							on:click={() => {
+								editing.set(user.id);
+								newScopes = user.permission_scopes.join(' ');
+							}}
+						>
+							{#if $editing === user.id}
+								<input
+									type="text"
+									bind:value={newScopes}
+									on:input={handleInputChange}
+									class={`text-center ${editing ? 'text-black' : ''}`}
+								/>
+								<button on:click={() => handleCancelEditing()} class="mx-2">Cancelar</button>
+								<button on:click={() => handleConfirmScopes(user.id)}>Salvar</button>
+							{:else}
+								{user.permission_scopes ? user.permission_scopes.join(' ') : ''}
+							{/if}
+						</td>
 
 						<td class="px-3 py-1 text-right">
 							<div class="flex justify-end w-full">
@@ -485,5 +543,17 @@
 	.scrollbar-hidden {
 		-ms-overflow-style: none; /* IE and Edge */
 		scrollbar-width: none; /* Firefox */
+	}
+
+	.editable {
+		cursor: pointer;
+	}
+
+	.scopes-form {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		max-width: 200px;
+		min-width: 200px;
 	}
 </style>

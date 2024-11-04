@@ -59,6 +59,7 @@ type BaseModel = {
 	name: string;
 	info?: ModelConfig;
 	owned_by: 'ollama' | 'openai' | 'arena';
+	permission_scopes: string[];
 };
 
 export interface OpenAIModel extends BaseModel {
@@ -198,4 +199,5 @@ type SessionUser = {
 	name: string;
 	role: string;
 	profile_image_url: string;
+	permission_scopes: string[];
 };

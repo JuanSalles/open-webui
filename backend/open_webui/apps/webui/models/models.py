@@ -4,7 +4,7 @@ from typing import Optional
 
 from open_webui.apps.webui.internal.db import Base, JSONField, get_db
 from open_webui.env import SRC_LOG_LEVELS
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import BigInteger, Column, Text
 
 log = logging.getLogger(__name__)
@@ -70,6 +70,12 @@ class Model(Base):
     updated_at = Column(BigInteger)
     created_at = Column(BigInteger)
 
+    permission_scopes = Column(JSONField)
+    """
+        Holds a JSON with the permisson_scopes.
+    """
+    
+
 
 class ModelModel(BaseModel):
     id: str
@@ -82,6 +88,8 @@ class ModelModel(BaseModel):
 
     updated_at: int  # timestamp in epoch
     created_at: int  # timestamp in epoch
+
+    permission_scopes: list[str] = Field(default_factory=lambda: ["default"])
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -97,6 +105,7 @@ class ModelResponse(BaseModel):
     meta: ModelMeta
     updated_at: int  # timestamp in epoch
     created_at: int  # timestamp in epoch
+    permission_scopes: list[str]
 
 
 class ModelForm(BaseModel):
@@ -105,7 +114,7 @@ class ModelForm(BaseModel):
     name: str
     meta: ModelMeta
     params: ModelParams
-
+    permission_scopes: list[str]
 
 class ModelsTable:
     def insert_new_model(

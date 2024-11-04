@@ -42,11 +42,22 @@
 					<Selector
 						id={`${selectedModelIdx}`}
 						placeholder={$i18n.t('Select a model')}
-						items={$models.map((model) => ({
-							value: model.id,
-							label: model.name,
-							model: model
-						}))}
+						items={$models
+							.filter((model) => {
+								if (model.permission_scopes.length === 0) {
+									model.permission_scopes = ['default'];
+								}
+								return (
+									model.permission_scopes.includes('default') ||
+									$user?.permission_scopes.includes('master') ||
+									model.permission_scopes.some((scope) => $user?.permission_scopes.includes(scope))
+								);
+							})
+							.map((m) => ({
+								value: m.id,
+								label: m.name,
+								model: m
+							}))}
 						showTemporaryChatControl={$user.role === 'user'
 							? ($config?.permissions?.chat?.temporary ?? true)
 							: true}

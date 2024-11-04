@@ -47,9 +47,11 @@
 
 	let id = '';
 	let name = '';
+	let permission_scopes = 'default';
 
 	let info = {
 		id: '',
+		permission_scopes: [],
 		base_model_id: null,
 		name: '',
 		meta: {
@@ -103,6 +105,8 @@
 		info.id = id;
 		info.name = name;
 		info.meta.capabilities = capabilities;
+		// @ts-ignore
+		info.permission_scopes = permission_scopes.split(' ');
 
 		if (knowledge.length > 0) {
 			info.meta.knowledge = knowledge;
@@ -683,6 +687,21 @@
 							info.meta.tags = [...info.meta.tags, { name: tagName }];
 						}
 					}}
+				/>
+			</div>
+
+			<div class="mt-2">
+				<div class=" text-m font-semibold mb-2">Permission scopes</div>
+				<input
+					class="px-3 py-1.5 text-sm w-full bg-transparent border dark:border-gray-600 outline-none rounded-lg"
+					placeholder="Add Permission scopes (separated by spaces)"
+					bind:value={permission_scopes}
+					on:change={() => {
+						if (permission_scopes.length === 0) {
+							permission_scopes = 'default';
+						}
+					}}
+					required
 				/>
 			</div>
 		</div>

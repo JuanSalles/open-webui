@@ -9,6 +9,7 @@ from open_webui.apps.webui.models.users import (
     Users,
     UserSettings,
     UserUpdateForm,
+    UserPermissionScopesUpdateForm
 )
 from open_webui.constants import ERROR_MESSAGES
 from open_webui.env import SRC_LOG_LEVELS
@@ -256,3 +257,20 @@ async def delete_user_by_id(user_id: str, user=Depends(get_admin_user)):
         status_code=status.HTTP_403_FORBIDDEN,
         detail=ERROR_MESSAGES.ACTION_PROHIBITED,
     )
+
+############################
+# UpdateUserPermissionScopes
+############################
+
+@router.post("/update/permissionscopes", response_model=Optional[UserModel])
+async def update_user_scopes(form_data: UserPermissionScopesUpdateForm, user=Depends(get_admin_user)):
+    print("Entrou no Update de Permission", form_data)
+    print(form_data.id , form_data.permission_scopes)
+    userToUpdate = Users.get_user_by_id(form_data.id)
+    if userToUpdate:
+        return Users.update_user_permission_scopes_by_id(form_data.id, form_data.permission_scopes)
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=ERROR_MESSAGES.USER_NOT_FOUND,
+        )

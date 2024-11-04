@@ -89,6 +89,7 @@ async def get_session_user(
         "name": user.name,
         "role": user.role,
         "profile_image_url": user.profile_image_url,
+        "permission_scopes": user.permission_scopes,
     }
 
 
@@ -220,6 +221,7 @@ async def signin(request: Request, response: Response, form_data: SigninForm):
             "name": user.name,
             "role": user.role,
             "profile_image_url": user.profile_image_url,
+            "permission_scopes": user.permission_scopes,
         }
     else:
         raise HTTPException(400, detail=ERROR_MESSAGES.INVALID_CRED)
@@ -261,12 +263,20 @@ async def signup(request: Request, response: Response, form_data: SignupForm):
             else request.app.state.config.DEFAULT_USER_ROLE
         )
         hashed = get_password_hash(form_data.password)
+        permission_scopes = (
+            ["master", "default"]
+            if role == "admin"
+            else ["default"]
+        )
+        oauth = None
         user = Auths.insert_new_auth(
             form_data.email.lower(),
             hashed,
             form_data.name,
             form_data.profile_image_url,
             role,
+            oauth,
+            permission_scopes,
         )
 
         if user:
@@ -316,6 +326,7 @@ async def signup(request: Request, response: Response, form_data: SignupForm):
                 "name": user.name,
                 "role": user.role,
                 "profile_image_url": user.profile_image_url,
+                "permission_scopes": user.permission_scopes,
             }
         else:
             raise HTTPException(500, detail=ERROR_MESSAGES.CREATE_USER_ERROR)
@@ -365,6 +376,7 @@ async def add_user(form_data: AddUserForm, user=Depends(get_admin_user)):
                 "name": user.name,
                 "role": user.role,
                 "profile_image_url": user.profile_image_url,
+                "permission_scopes": user.permission_scopes,
             }
         else:
             raise HTTPException(500, detail=ERROR_MESSAGES.CREATE_USER_ERROR)

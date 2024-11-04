@@ -61,8 +61,19 @@ export const getModels = async (token: string = '') => {
 			return 0; // They are equal
 		});
 
-	console.log(models);
-	return models;
+	
+	// Transform models to add scopes
+	const modelsTranformed = models.map((model) => {
+
+		const modelTranformed = {
+			...model,
+			permission_scopes: model.info?.permission_scopes || []
+		}
+		return modelTranformed;
+	});
+
+	console.log(modelsTranformed);
+	return modelsTranformed;
 };
 
 type ChatCompletedForm = {

@@ -29,6 +29,7 @@ class User(Base):
     info = Column(JSONField, nullable=True)
 
     oauth_sub = Column(Text, unique=True)
+    permission_scopes = Column(JSONField, nullable=True)
 
 
 class UserSettings(BaseModel):
@@ -54,6 +55,8 @@ class UserModel(BaseModel):
 
     oauth_sub: Optional[str] = None
 
+    permission_scopes: Optional[list[str]]
+
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -66,6 +69,9 @@ class UserRoleUpdateForm(BaseModel):
     id: str
     role: str
 
+class UserPermissionScopesUpdateForm(BaseModel):
+    id: str
+    permission_scopes: list[str]
 
 class UserUpdateForm(BaseModel):
     name: str
@@ -83,6 +89,7 @@ class UsersTable:
         profile_image_url: str = "/user.png",
         role: str = "pending",
         oauth_sub: Optional[str] = None,
+        permission_scopes: Optional[list[str]] = ["default"],
     ) -> Optional[UserModel]:
         with get_db() as db:
             user = UserModel(
@@ -96,6 +103,7 @@ class UsersTable:
                     "created_at": int(time.time()),
                     "updated_at": int(time.time()),
                     "oauth_sub": oauth_sub,
+                    "permission_scopes": permission_scopes,
                 }
             )
             result = User(**user.model_dump())
@@ -254,6 +262,18 @@ class UsersTable:
             with get_db() as db:
                 user = db.query(User).filter_by(id=id).first()
                 return user.api_key
+        except Exception:
+            return None
+        
+    def update_user_permission_scopes_by_id(self, id: str, permission_scopes: list[str]) -> Optional[UserModel]:
+        try:
+            with get_db() as db:
+                db.query(User).filter_by(id=id).update(
+                    {"permission_scopes": permission_scopes}
+                )
+                db.commit()
+                user = db.query(User).filter_by(id=id).first()
+                return UserModel.model_validate(user)
         except Exception:
             return None
 

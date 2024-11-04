@@ -27,6 +27,7 @@ ARG BUILD_HASH
 WORKDIR /app
 
 COPY package.json package-lock.json ./
+RUN npm config set registry https://registry.npmjs.org/
 RUN npm ci
 
 COPY . .
